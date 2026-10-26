@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crochet Pattern Assistant & Counter</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter & Lexend for High Legibility -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            yarn: {
+              50: '#fdf8f6',
+              100: '#f2e8e5',
+              200: '#e5d0cb',
+              500: '#ca7a66',
+              600: '#b85f49',
+              700: '#994a37',
+              900: '#4a2117',
+            },
+            sage: {
+              100: '#eef3ef',
+              500: '#6b8e72',
+              700: '#3d5843',
+            }
+          },
+          fontFamily: {
+            sans: ['Lexend', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Lexend', sans-serif;
+      touch-action: manipulation;
+    }
+    
+    /* Accessibility High Contrast Focus */
+    .high-contrast {
+      filter: contrast(125%) saturate(110%);
+    }
+    
+    /* Tactile push effect for elderly accessibility */
+    .btn-tactile {
+      transition: all 0.08s ease-in-out;
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+    }
+    .btn-tactile:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #ca7a66;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body class="bg-yarn-50 text-gray-900 min-h-full flex flex-col transition-colors duration-200" id="appBody">
+
+  <!-- TOP ACCESSIBILITY HEADER -->
+  <header class="bg-white dark:bg-gray-900 border-b-4 border-yarn-500 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-full bg-yarn-500 text-white flex items-center justify-center text-2xl shadow">
+          <i class="fa-solid font-bold fa-scroll"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-wide text-yarn-900 dark:text-yarn-100" id="headerTitle">Crochet Counter</h1>
+          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Senior-Friendly Pattern Assistant</p>
+        </div>
+      </div>
+
+      <!-- Quick Accessibility Toolbar -->
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <!-- Font Size Switcher -->
+        <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 border">
+          <button onclick="changeFontSize(-2)" class="px-3 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="Decrease Font Size">A-</button>
+          <span class="px-1 text-xs text-gray-400 font-mono" id="fontSizeLabel">100%</span>
+          <button onclick="changeFontSize(2)" class="px-3 py-2 text-base font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="Increase Font Size">A+</button>
+        </div>
+
+        <!-- High Contrast Toggle -->
+        <button onclick="toggleHighContrast()" class="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 border flex items-center gap-1" title="Toggle High Contrast">
+          <i class="fa-solid fa-circle-half-stroke text-lg"></i>
+          <span class="hidden md:inline text-xs">Contrast</span>
+        </button>
+
+        <!-- US / UK Terminology Toggle -->
+        <button onclick="toggleTerminology()" id="termsBtn" class="px-3 py-2 bg-sage-500 hover:bg-sage-700 text-white font-bold rounded-lg text-sm shadow transition flex items-center gap-2">
+          <i class="fa-solid fa-earth-americas"></i>
+          <span>US Terms</span>
+        </button>
+
+        <!-- Dictionary Modal Button -->
+        <button onclick="toggleModal('dictionaryModal')" class="p-3 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg border border-amber-300" title="Crochet Dictionary">
+          <i class="fa-solid fa-book-open text-lg"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT COLUMN: IMPORT & PATTERN OVERVIEW (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- IMPORT / ANALYZER CARD -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border-2 border-yarn-200 dark:border-gray-700 p-5">
+        <h2 class="text-xl font-bold text-yarn-900 dark:text-yarn-100 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-file-import text-yarn-500"></i>
+          Import Pattern
+        </h2>
+        
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+          Upload a photo of your pattern, snap a live camera shot, or paste text. AI will parse rounds & stitches automatically!
+        </p>
+
+        <!-- Import Action Buttons -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <button onclick="openCameraModal()" class="btn-tactile bg-yarn-500 hover:bg-yarn-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-base">
+            <i class="fa-solid fa-camera text-xl"></i>
+            <span>Camera</span>
+          </button>
+
+          <label class="btn-tactile bg-sage-500 hover:bg-sage-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-base cursor-pointer text-center">
+            <i class="fa-solid fa-upload text-xl"></i>
+            <span>Image / File</span>
+            <input type="file" id="fileInput" accept="image/*,.txt" class="hidden" onchange="handleFileUpload(event)">
+          </label>
+        </div>
+
+        <button onclick="toggleModal('manualTextModal')" class="w-full py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-xl border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2 text-sm">
+          <i class="fa-solid fa-pen-to-square"></i>
+          Paste or Edit Manual Pattern Text
+        </button>
+      </div>
+
+      <!-- CURRENT PATTERN INFO & STITCH LEGEND -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border-2 border-yarn-200 dark:border-gray-700 p-5 flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-3 border-b pb-2">
+          <h2 class="text-xl font-bold text-yarn-900 dark:text-yarn-100" id="projectName">
+            Project: Amigurumi Bear
+          </h2>
+          <span id="termBadge" class="bg-yarn-100 text-yarn-700 text-xs font-bold px-2.5 py-1 rounded-full border border-yarn-200">
+            US Terms
+          </span>
+        </div>
+
+        <!-- Progress Overview Bar -->
+        <div class="mb-4">
+          <div class="flex justify-between text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+            <span>Overall Progress</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden border">
+            <div id="progressBar" class="bg-yarn-500 h-full transition-all duration-300 w-0"></div>
+          </div>
+        </div>
+
+        <!-- Detected Stitch Legend -->
+        <div class="mb-4">
+          <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Key / Legend Found</h3>
+          <div id="stitchLegend" class="flex flex-wrap gap-2 text-xs">
+            <span class="bg-sage-100 text-sage-700 font-semibold px-2 py-1 rounded">sc: Single Crochet</span>
+            <span class="bg-sage-100 text-sage-700 font-semibold px-2 py-1 rounded">inc: Increase</span>
+            <span class="bg-sage-100 text-sage-700 font-semibold px-2 py-1 rounded">dec: Decrease</span>
+          </div>
+        </div>
+
+        <!-- Pattern Rounds Checklist -->
+        <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Round Checklist</h3>
+        <div id="roundsChecklist" class="flex-1 overflow-y-auto max-h-[350px] space-y-2 pr-1">
+          <!-- Dynamically generated list -->
+        </div>
+
+        <div class="mt-4 pt-3 border-t flex justify-between gap-2">
+          <button onclick="resetProjectProgress()" class="text-xs text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded hover:bg-red-50">
+            <i class="fa-solid fa-rotate-right"></i> Reset Counters
+          </button>
+          <button onclick="exportProjectData()" class="text-xs text-yarn-600 hover:text-yarn-800 font-bold px-2 py-1 rounded hover:bg-yarn-50">
+            <i class="fa-solid fa-download"></i> Save Backup
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: MAIN ACCESSIBLE COUNTERS (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+
+      <!-- ACTIVE ROUND COUNTER CARD -->
+      <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border-4 border-yarn-500 p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <div class="absolute top-4 left-4 bg-yarn-100 text-yarn-800 font-bold px-3 py-1 rounded-full text-xs border border-yarn-300">
+          Step Tracker
+        </div>
+
+        <!-- Sound Toggle in Counter -->
+        <button onclick="toggleAudioFeedback()" id="audioToggleBtn" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-yarn-500 text-xl" title="Toggle Sound">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+
+        <!-- Current Round Title -->
+        <div class="mt-4 mb-1">
+          <span class="text-lg font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Active Round / Row</span>
+          <div class="text-5xl font-black text-yarn-900 dark:text-yarn-50 my-1" id="activeRoundTitle">Round 1</div>
+        </div>
+
+        <!-- Current Instruction Display -->
+        <div class="w-full bg-yarn-50 dark:bg-gray-700/50 rounded-2xl p-4 my-3 border-2 border-yarn-200 dark:border-gray-600">
+          <p id="activeInstruction" class="text-2xl font-bold text-gray-800 dark:text-gray-100 leading-snug">
+            6 sc in magic ring [6 stitches]
+          </p>
+          <div id="targetStitchBadge" class="mt-2 text-sm font-semibold text-yarn-600 dark:text-yarn-300">
+            Target Count: 6 sts
+          </div>
+        </div>
+
+        <!-- BIG ROUND COUNTER CONTROLS -->
+        <div class="w-full grid grid-cols-2 gap-4 mt-2">
+          <button onclick="adjustRound(-1)" class="btn-tactile bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-extrabold py-6 rounded-2xl text-2xl flex items-center justify-center gap-2 border-2 border-gray-400">
+            <i class="fa-solid fa-minus text-3xl"></i>
+            <span>Prev Round</span>
+          </button>
+
+          <button onclick="adjustRound(1)" class="btn-tactile bg-yarn-500 hover:bg-yarn-600 text-white font-extrabold py-6 rounded-2xl text-2xl flex items-center justify-center gap-2 border-2 border-yarn-700 shadow-lg">
+            <span>Next Round</span>
+            <i class="fa-solid fa-plus text-3xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- DUAL IN-ROUND TRACKERS (STITCHES & REPETITIONS) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- 1. STITCH-BY-STITCH COUNTER -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border-2 border-sage-500 p-5 flex flex-col items-center text-center">
+          <span class="text-xs font-bold text-sage-700 dark:text-sage-300 uppercase tracking-wider mb-1">In-Round Stitch Counter</span>
+          
+          <div class="text-6xl font-black text-gray-900 dark:text-white my-2 font-mono" id="stitchCounterValue">
+            0
+          </div>
+          <span class="text-xs text-gray-500 mb-4">Resetting automatically each round</span>
+
+          <!-- Big Buttons -->
+          <div class="w-full grid grid-cols-2 gap-3">
+            <button onclick="adjustStitch(-1)" class="btn-tactile bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-4 rounded-xl text-2xl flex items-center justify-center">
+              <i class="fa-solid fa-minus"></i>
+            </button>
+            <button onclick="adjustStitch(1)" class="btn-tactile bg-sage-500 hover:bg-sage-700 text-white font-bold py-4 rounded-xl text-2xl flex items-center justify-center shadow">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <button onclick="resetStitches()" class="mt-3 text-xs text-gray-400 hover:text-gray-600 font-semibold underline">
+            Reset Stitch Counter
+          </button>
+        </div>
+
+        <!-- 2. REPETITION TRACKER LOOP -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border-2 border-amber-400 p-5 flex flex-col items-center text-center">
+          <span class="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-1">Repeat Set Loop</span>
+
+          <div class="flex items-baseline my-2 gap-1">
+            <span class="text-6xl font-black text-amber-900 dark:text-amber-100 font-mono" id="repeatCurrentValue">1</span>
+            <span class="text-2xl font-bold text-gray-400">/</span>
+            <span class="text-2xl font-bold text-gray-500" id="repeatTargetValue">6</span>
+          </div>
+          <span class="text-xs text-gray-500 mb-4">e.g. (*sc 2, inc* x6)</span>
+
+          <!-- Big Buttons -->
+          <div class="w-full grid grid-cols-2 gap-3">
+            <button onclick="adjustRepeat(-1)" class="btn-tactile bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-4 rounded-xl text-2xl flex items-center justify-center">
+              <i class="fa-solid fa-minus"></i>
+            </button>
+            <button onclick="adjustRepeat(1)" class="btn-tactile bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-xl text-2xl flex items-center justify-center shadow">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <button onclick="resetRepeat()" class="mt-3 text-xs text-gray-400 hover:text-gray-600 font-semibold underline">
+            Reset Loop
+          </button>
+        </div>
+
+      </div>
+
+      <!-- NOTES & REMINDERS FOR ACCESSIBILITY -->
+      <div class="bg-amber-50 dark:bg-gray-800 rounded-2xl p-4 border border-amber-200 dark:border-gray-700 flex items-start gap-3">
+        <i class="fa-solid fa-lightbulb text-amber-500 text-2xl mt-1"></i>
+        <div class="text-sm text-amber-900 dark:text-amber-100">
+          <strong class="font-bold">Senior Crochet Tip:</strong> Use stitch markers at the beginning of every round to easily count your target stitches! You can also tap anywhere on the large plus buttons for smooth single-hand operation.
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ==================== MODALS & POPUPS ==================== -->
+
+  <!-- 1. CAMERA INPUT MODAL -->
+  <div id="cameraModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-5 flex flex-col items-center shadow-2xl relative">
+      <button onclick="closeCameraModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">
+        &times;
+      </button>
+      <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-white flex items-center gap-2">
+        <i class="fa-solid fa-camera text-yarn-500"></i>
+        Scan Pattern Picture
+      </h3>
+      
+      <div class="w-full bg-black rounded-2xl overflow-hidden aspect-video relative flex items-center justify-center">
+        <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+        <canvas id="cameraCanvas" class="hidden"></canvas>
+      </div>
+
+      <p class="text-xs text-gray-500 dark:text-gray-400 my-3 text-center">
+        Hold your pattern steady in clear light, then tap capture below.
+      </p>
+
+      <div class="w-full flex gap-3">
+        <button onclick="closeCameraModal()" class="flex-1 py-3 bg-gray-200 font-bold rounded-xl text-gray-700">Cancel</button>
+        <button onclick="captureCameraPhoto()" class="flex-1 py-3 bg-yarn-500 hover:bg-yarn-600 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-dot text-xl"></i> Snap & Analyze
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MANUAL PATTERN TEXT MODAL -->
+  <div id="manualTextModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col">
+      <button onclick="toggleModal('manualTextModal')" class="absolute top-4 right-4 text-gray-500 text-2xl font-bold">&times;</button>
+      <h3 class="text-xl font-bold text-yarn-900 dark:text-yarn-100 mb-2">Pattern Raw Text Input</h3>
+      <p class="text-sm text-gray-500 mb-4">Paste instructions directly. Format: <code class="bg-gray-100 p-1 rounded">R1: 6 sc in MR [6]</code></p>
+      
+      <textarea id="rawPatternInput" rows="10" class="w-full p-4 border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl focus:border-yarn-500 focus:outline-none text-base font-mono mb-4" placeholder="R1: Magic ring with 6 sc [6]&#10;R2: inc in each st around [12]&#10;R3: *sc 1, inc* repeat 6 times [18]..."></textarea>
+
+      <div class="flex justify-end gap-3">
+        <button onclick="toggleModal('manualTextModal')" class="px-5 py-2.5 bg-gray-200 font-bold rounded-xl text-gray-700">Cancel</button>
+        <button onclick="parseRawTextPattern()" class="px-6 py-2.5 bg-yarn-500 hover:bg-yarn-600 text-white font-bold rounded-xl shadow">
+          Parse & Save Pattern
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ABBREVIATION DICTIONARY MODAL -->
+  <div id="dictionaryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col">
+      <button onclick="toggleModal('dictionaryModal')" class="absolute top-4 right-4 text-gray-500 text-2xl font-bold">&times;</button>
+      <h3 class="text-2xl font-bold text-yarn-900 dark:text-yarn-100 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-book text-yarn-500"></i>
+        Crochet Dictionary & Terms
+      </h3>
+
+      <div class="overflow-y-auto flex-1 space-y-3 pr-2" id="dictionaryContent">
+        <!-- Generated JS List -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. LOADING ANALYZER OVERLAY -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-black/70 z-50 hidden flex flex-col items-center justify-center text-white p-4">
+    <div class="w-16 h-16 border-4 border-yarn-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <h3 class="text-2xl font-bold mb-1">AI Pattern Analyzer Working...</h3>
+    <p class="text-sm text-gray-300 text-center max-w-md">Extracting rounds, stitch counts, repetitions, and terminology details.</p>
+  </div>
+
+  <!-- JAVASCRIPT APP LOGIC -->
+  <script>
+    // --- GLOBAL STATE ---
+    let currentScale = 100;
+    let isHighContrast = false;
+    let currentTerms = 'US'; // 'US' or 'UK'
+    let audioEnabled = true;
+    let cameraStream = null;
+
+    // Default Pattern Sample
+    let projectData = {
+      title: "Friendly Bear Amigurumi",
+      terms: "US",
+      legend: [
+        { code: "sc", name: "Single Crochet" },
+        { code: "inc", name: "Increase (2 sc in same st)" },
+        { code: "dec", name: "Decrease (sc 2 together)" },
+        { code: "MR", name: "Magic Ring" }
+      ],
+      rounds: [
+        { roundNum: 1, text: "6 sc in magic ring", count: 6, repeats: 1 },
+        { roundNum: 2, text: "inc in each stitch around", count: 12, repeats: 6 },
+        { roundNum: 3, text: "*sc 1, inc* repeat 6 times", count: 18, repeats: 6 },
+        { roundNum: 4, text: "*sc 2, inc* repeat 6 times", count: 24, repeats: 6 },
+        { roundNum: 5, text: "sc in each stitch around", count: 24, repeats: 1 },
+        { roundNum: 6, text: "*sc 2, dec* repeat 6 times", count: 18, repeats: 6 },
+        { roundNum: 7, text: "*sc 1, dec* repeat 6 times", count: 12, repeats: 6 },
+        { roundNum: 8, text: "dec 6 times, FO and weave ends", count: 6, repeats: 6 }
+      ],
+      activeRoundIndex: 0,
+      activeStitches: 0,
+      activeRepeat: 1,
+      completedRounds: []
+    };
+
+    // Dictionary Data for US vs UK conversion
+    const CROCHET_DICTIONARY = [
+      { us: "sl st (slip stitch)", uk: "sl st (slip stitch)", desc: "Insert hook, yarn over, pull through both loops." },
+      { us: "ch (chain)", uk: "ch (chain)", desc: "Yarn over, pull through loop on hook." },
+      { us: "sc (single crochet)", uk: "dc (double crochet)", desc: "Insert hook, YO, draw loop, YO, draw through 2 loops." },
+      { us: "hdc (half double crochet)", uk: "htr (half treble)", desc: "YO, insert hook, YO, draw loop, YO, draw through 3 loops." },
+      { us: "dc (double crochet)", uk: "tr (treble crochet)", desc: "YO, insert hook, YO, draw loop, [YO, pull through 2] twice." },
+      { us: "tr (treble / triple)", uk: "dtr (double treble)", desc: "YO twice, insert hook, YO, pull through loops 2 at a time." },
+      { us: "inc (increase)", uk: "inc (increase)", desc: "Work 2 stitches into the same base stitch." },
+      { us: "dec (decrease)", uk: "dec (decrease)", desc: "Combine 2 stitches into 1." },
+      { us: "FO (fasten off)", uk: "FO (fasten off)", desc: "Cut yarn and pull tail through final loop." }
+    ];
+
+    // --- AUDIO / SOUND SYNTHESIS FOR TACTILE FEEDBACK ---
+    function playClickSound(pitch = 440) {
+      if (!audioEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(pitch, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      } catch (e) {
+        // Fallback or muted browser policies
+      }
+    }
+
+    function triggerHaptic() {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(40);
+      }
+    }
+
+    // --- ACCESSIBILITY FUNCTIONS ---
+    function changeFontSize(delta) {
+      currentScale = Math.max(80, Math.min(150, currentScale + delta));
+      document.documentElement.style.fontSize = `${currentScale}%`;
+      document.getElementById('fontSizeLabel').innerText = `${currentScale}%`;
+      saveState();
+    }
+
+    function toggleHighContrast() {
+      isHighContrast = !isHighContrast;
+      document.body.classList.toggle('high-contrast', isHighContrast);
+      saveState();
+    }
+
+    function toggleTerminology() {
+      currentTerms = currentTerms === 'US' ? 'UK' : 'US';
+      document.getElementById('termsBtn').querySelector('span').innerText = `${currentTerms} Terms`;
+      document.getElementById('termBadge').innerText = `${currentTerms} Terms`;
+      renderDictionary();
+      renderActiveRound();
+      saveState();
+    }
+
+    function toggleAudioFeedback() {
+      audioEnabled = !audioEnabled;
+      const btn = document.getElementById('audioToggleBtn');
+      btn.innerHTML = audioEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+      btn.classList.toggle('text-yarn-500', audioEnabled);
+      btn.classList.toggle('text-gray-400', !audioEnabled);
+    }
+
+    function toggleModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    // --- APP RENDER FUNCTIONS ---
+    function renderApp() {
+      document.getElementById('projectName').innerText = projectData.title || "Crochet Project";
+      renderLegend();
+      renderChecklist();
+      renderActiveRound();
+      renderProgress();
+    }
+
+    function renderLegend() {
+      const container = document.getElementById('stitchLegend');
+      container.innerHTML = '';
+      if (!projectData.legend || projectData.legend.length === 0) {
+        container.innerHTML = '<span class="text-gray-400 italic">No abbreviations detected</span>';
+        return;
+      }
+      projectData.legend.forEach(item => {
+        const span = document.createElement('span');
+        span.className = "bg-sage-100 text-sage-700 font-semibold px-2 py-1 rounded text-xs";
+        span.innerText = `${item.code}: ${item.name}`;
+        container.appendChild(span);
+      });
+    }
+
+    function renderChecklist() {
+      const container = document.getElementById('roundsChecklist');
+      container.innerHTML = '';
+
+      projectData.rounds.forEach((rd, idx) => {
+        const isActive = idx === projectData.activeRoundIndex;
+        const isCompleted = projectData.completedRounds.includes(idx);
+
+        const item = document.createElement('div');
+        item.className = `p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+          isActive 
+            ? 'bg-yarn-100 border-yarn-500 dark:bg-gray-700 text-yarn-900 font-bold shadow-sm' 
+            : isCompleted
+              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 line-through border-gray-200'
+              : 'bg-white dark:bg-gray-800 hover:bg-gray-50 border-gray-200 text-gray-700 dark:text-gray-200'
+        }`;
+
+        item.onclick = () => jumpToRound(idx);
+
+        item.innerHTML = `
+          <div class="flex items-center gap-3">
+            <input type="checkbox" ${isCompleted ? 'checked' : ''} onclick="event.stopPropagation(); toggleRoundComplete(${idx})" class="w-5 h-5 accent-yarn-500 rounded cursor-pointer">
+            <div>
+              <span class="text-sm font-bold">Round ${rd.roundNum}</span>
+              <p class="text-xs font-normal opacity-90 truncate max-w-[200px]">${rd.text}</p>
+            </div>
+          </div>
+          <span class="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded font-mono font-bold">
+            ${rd.count ? rd.count + ' sts' : ''}
+          </span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function renderActiveRound() {
+      const rd = projectData.rounds[projectData.activeRoundIndex];
+      if (!rd) return;
+
+      document.getElementById('activeRoundTitle').innerText = `Round ${rd.roundNum}`;
+      document.getElementById('activeInstruction').innerText = rd.text;
+      document.getElementById('targetStitchBadge').innerText = rd.count ? `Target Stitches: ${rd.count} sts` : 'Custom Count';
+
+      // Counters
+      document.getElementById('stitchCounterValue').innerText = projectData.activeStitches;
+      document.getElementById('repeatCurrentValue').innerText = projectData.activeRepeat;
+      document.getElementById('repeatTargetValue').innerText = rd.repeats || 1;
+    }
+
+    function renderProgress() {
+      const total = projectData.rounds.length;
+      if (total === 0) return;
+      const completedCount = projectData.completedRounds.length;
+      const percent = Math.round((completedCount / total) * 100);
+
+      document.getElementById('progressPercent').innerText = `${percent}%`;
+      document.getElementById('progressBar').style.width = `${percent}%`;
+    }
+
+    function renderDictionary() {
+      const container = document.getElementById('dictionaryContent');
+      container.innerHTML = '';
+      CROCHET_DICTIONARY.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "p-3 bg-gray-50 dark:bg-gray-700 rounded-xl border";
+        div.innerHTML = `
+          <div class="flex justify-between font-bold text-yarn-700 dark:text-yarn-300 text-sm">
+            <span>US: ${item.us}</span>
+            <span class="text-sage-700 dark:text-sage-300">UK: ${item.uk}</span>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">${item.desc}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // --- COUNTER LOGIC ---
+    function adjustRound(delta) {
+      playClickSound(delta > 0 ? 587 : 349);
+      triggerHaptic();
+
+      let newIdx = projectData.activeRoundIndex + delta;
+      if (newIdx >= 0 && newIdx < projectData.rounds.length) {
+        // Automatically complete previous if going forward
+        if (delta > 0 && !projectData.completedRounds.includes(projectData.activeRoundIndex)) {
+          projectData.completedRounds.push(projectData.activeRoundIndex);
+        }
+        projectData.activeRoundIndex = newIdx;
+        projectData.activeStitches = 0;
+        projectData.activeRepeat = 1;
+        saveState();
+        renderApp();
+      }
+    }
+
+    function jumpToRound(idx) {
+      playClickSound(520);
+      projectData.activeRoundIndex = idx;
+      projectData.activeStitches = 0;
+      projectData.activeRepeat = 1;
+      saveState();
+      renderApp();
+    }
+
+    function toggleRoundComplete(idx) {
+      const foundIdx = projectData.completedRounds.indexOf(idx);
+      if (foundIdx > -1) {
+        projectData.completedRounds.splice(foundIdx, 1);
+      } else {
+        projectData.completedRounds.push(idx);
+      }
+      saveState();
+      renderApp();
+    }
+
+    function adjustStitch(delta) {
+      playClickSound(delta > 0 ? 880 : 440);
+      triggerHaptic();
+      projectData.activeStitches = Math.max(0, projectData.activeStitches + delta);
+      document.getElementById('stitchCounterValue').innerText = projectData.activeStitches;
+      saveState();
+    }
+
+    function resetStitches() {
+      projectData.activeStitches = 0;
+      document.getElementById('stitchCounterValue').innerText = 0;
+      saveState();
+    }
+
+    function adjustRepeat(delta) {
+      playClickSound(delta > 0 ? 659 : 329);
+      triggerHaptic();
+      const currentRd = projectData.rounds[projectData.activeRoundIndex];
+      const maxRep = currentRd ? (currentRd.repeats || 99) : 99;
+
+      projectData.activeRepeat = Math.max(1, Math.min(maxRep, projectData.activeRepeat + delta));
+      document.getElementById('repeatCurrentValue').innerText = projectData.activeRepeat;
+      saveState();
+    }
+
+    function resetRepeat() {
+      projectData.activeRepeat = 1;
+      document.getElementById('repeatCurrentValue').innerText = 1;
+      saveState();
+    }
+
+    function resetProjectProgress() {
+      if (confirm("Reset all project round progress?")) {
+        projectData.activeRoundIndex = 0;
+        projectData.activeStitches = 0;
+        projectData.activeRepeat = 1;
+        projectData.completedRounds = [];
+        saveState();
+        renderApp();
+      }
+    }
+
+    // --- GEMINI API PATTERN AI ANALYZER ---
+    async function analyzePatternWithAI(promptText, imageBase64 = null) {
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+
+      const apiKey = ""; // Canvas runtime environment automatically provides the key
+      const systemInstruction = `You are an expert crochet pattern parser. Analyze the input pattern image or text and extract structured JSON output strictly in the requested JSON schema. Detect rounds/rows, stitch target counts, repetitions (e.g. *sc 2, inc* x 6 means 6 repeats), project title, and abbreviations used.`;
+
+      const schema = {
+        type: "OBJECT",
+        properties: {
+          title: { type: "STRING" },
+          terms: { type: "STRING" },
+          legend: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                code: { type: "STRING" },
+                name: { type: "STRING" }
+              }
+            }
+          },
+          rounds: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                roundNum: { type: "INTEGER" },
+                text: { type: "STRING" },
+                count: { type: "INTEGER" },
+                repeats: { type: "INTEGER" }
+              }
+            }
+          }
+        },
+        propertyOrdering: ["title", "terms", "legend", "rounds"]
+      };
+
+      try {
+        let model = "gemini-3-flash-preview";
+        let parts = [{ text: promptText || "Analyze this crochet pattern into structured rounds." }];
+
+        if (imageBase64) {
+          model = "gemini-3-flash-preview"; // Uses inline data for vision
+          parts.push({
+            inlineData: {
+              mimeType: "image/jpeg",
+              data: imageBase64
+            }
+          });
+        }
+
+        const payload = {
+          contents: [{ role: "user", parts: parts }],
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: schema
+          }
+        };
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (jsonText) {
+          const parsed = JSON.parse(jsonText);
+          if (parsed.rounds && parsed.rounds.length > 0) {
+            projectData.title = parsed.title || "Imported Project";
+            projectData.legend = parsed.legend || [];
+            projectData.rounds = parsed.rounds;
+            projectData.activeRoundIndex = 0;
+            projectData.activeStitches = 0;
+            projectData.activeRepeat = 1;
+            projectData.completedRounds = [];
+            saveState();
+            renderApp();
+          }
+        }
+      } catch (err) {
+        alert("Pattern Analysis Error. Falling back to local text parser.");
+      } finally {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+      }
+    }
+
+    // Fallback Regex Local Parser for Text Inputs
+    function parseRawTextPattern() {
+      const raw = document.getElementById('rawPatternInput').value;
+      if (!raw.trim()) return;
+
+      const lines = raw.split('\n').filter(l => l.trim().length > 0);
+      const parsedRounds = [];
+
+      lines.forEach((line, index) => {
+        // Check for round pattern line e.g. R1: sc 6 [6]
+        const countMatch = line.match(/\[(\d+)\]|\((\d+)\s*sts?\)/i);
+        const repeatMatch = line.match(/(?:repeat|\*|x)\s*(\d+)/i);
+
+        const count = countMatch ? parseInt(countMatch[1] || countMatch[2]) : null;
+        const repeats = repeatMatch ? parseInt(repeatMatch[1]) : 1;
+
+        parsedRounds.push({
+          roundNum: index + 1,
+          text: line.trim(),
+          count: count,
+          repeats: repeats
+        });
+      });
+
+      if (parsedRounds.length > 0) {
+        projectData.title = "Custom Manual Pattern";
+        projectData.rounds = parsedRounds;
+        projectData.activeRoundIndex = 0;
+        projectData.activeStitches = 0;
+        projectData.completedRounds = [];
+        saveState();
+        renderApp();
+        toggleModal('manualTextModal');
+      }
+    }
+
+    // --- FILE UPLOAD & CAMERA HANDLERS ---
+    function handleFileUpload(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const base64 = e.target.result.split(',')[1];
+          analyzePatternWithAI("Analyze this image of a crochet pattern.", base64);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('rawPatternInput').value = e.target.result;
+          parseRawTextPattern();
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    async function openCameraModal() {
+      toggleModal('cameraModal');
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        const video = document.getElementById('cameraVideo');
+        video.srcObject = cameraStream;
+      } catch (e) {
+        alert("Camera access unavailable. You can use the Image / File upload button instead!");
+        toggleModal('cameraModal');
+      }
+    }
+
+    function closeCameraModal() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+      toggleModal('cameraModal');
+    }
+
+    function captureCameraPhoto() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.getElementById('cameraCanvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const base64Data = canvas.toDataURL('image/jpeg').split(',')[1];
+
+      closeCameraModal();
+      analyzePatternWithAI("Analyze this captured photo of a crochet pattern.", base64Data);
+    }
+
+    // --- STORAGE & EXPORT ---
+    function saveState() {
+      try {
+        localStorage.setItem('crochetApp_data', JSON.stringify(projectData));
+        localStorage.setItem('crochetApp_scale', currentScale);
+        localStorage.setItem('crochetApp_contrast', isHighContrast);
+        localStorage.setItem('crochetApp_terms', currentTerms);
+      } catch (e) {}
+    }
+
+    function loadState() {
+      try {
+        const data = localStorage.getItem('crochetApp_data');
+        if (data) projectData = JSON.parse(data);
+
+        const scale = localStorage.getItem('crochetApp_scale');
+        if (scale) {
+          currentScale = parseInt(scale);
+          document.documentElement.style.fontSize = `${currentScale}%`;
+          document.getElementById('fontSizeLabel').innerText = `${currentScale}%`;
+        }
+
+        const contrast = localStorage.getItem('crochetApp_contrast');
+        if (contrast === 'true') {
+          isHighContrast = true;
+          document.body.classList.add('high-contrast');
+        }
+
+        const terms = localStorage.getItem('crochetApp_terms');
+        if (terms) currentTerms = terms;
+      } catch (e) {}
+    }
+
+    function exportProjectData() {
+      const jsonStr = JSON.stringify(projectData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.title.replace(/\s+/g, '_')}_crochet_backup.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // INITIALIZE APPLICATION
+    window.onload = function() {
+      loadState();
+      renderDictionary();
+      renderApp();
+    };
+  </script>
+</body>
+</html>
